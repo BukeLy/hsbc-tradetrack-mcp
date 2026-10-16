@@ -3,7 +3,7 @@
 ## What changed
 
 ## How verified
-<!-- A real tool call, or the Horizon preview URL -->
+<!-- A real tool call -->
 
 - [ ] Breaking change to the tool schema (PR title has `!`)
 
