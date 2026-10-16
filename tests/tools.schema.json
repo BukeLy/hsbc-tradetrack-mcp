@@ -1,0 +1,681 @@
+{
+  "tradetrack": {
+    "annotations": {
+      "idempotent_hint": true,
+      "open_world_hint": true,
+      "read_only_hint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "lists": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "hot",
+                  "top_buy",
+                  "top_sell",
+                  "top_hold"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market": {
+          "enum": [
+            "US",
+            "HK"
+          ],
+          "type": "string"
+        },
+        "period": {
+          "default": "today",
+          "enum": [
+            "today",
+            "yesterday",
+            "last_month",
+            "last_3_months",
+            "last_6_months"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "market"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "items": {
+            "properties": {
+              "fetched_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "When the collector stored this snapshot (history only)"
+              },
+              "is_today": {
+                "description": "False before the day's first refresh: the data is the previous day's final",
+                "type": "boolean"
+              },
+              "list_name": {
+                "enum": [
+                  "hot",
+                  "top_buy",
+                  "top_sell",
+                  "top_hold"
+                ],
+                "type": "string"
+              },
+              "market": {
+                "enum": [
+                  "US",
+                  "HK"
+                ],
+                "type": "string"
+              },
+              "next_refresh_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "period": {
+                "enum": [
+                  "today",
+                  "yesterday",
+                  "last_month",
+                  "last_3_months",
+                  "last_6_months"
+                ],
+                "type": "string"
+              },
+              "refreshed_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "stocks": {
+                "items": {
+                  "properties": {
+                    "add_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_buy: % that added to existing positions; new + add = 100"
+                    },
+                    "avg_buy_price": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot, top_buy: average buy price, in `currency`"
+                    },
+                    "avg_sell_price": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot, top_sell: average sell price, in `currency`"
+                    },
+                    "buy_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot: % of HSBC investors' traded volume that was buying"
+                    },
+                    "currency": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "new_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_buy: % of the top 5%'s buying that opened new positions"
+                    },
+                    "rank_last_3_months": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_hold only"
+                    },
+                    "rank_last_6_months": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_hold only"
+                    },
+                    "rank_last_month": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "rank_today": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "Rank in today's top 10; null when not in it"
+                    },
+                    "rank_yesterday": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "reduce_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_sell: % of the top 5%'s selling that only reduced"
+                    },
+                    "sell_all_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_sell: % that fully exited; reduce + sell_all = 100"
+                    },
+                    "sell_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot: % that was selling; buy_pct + sell_pct = 100"
+                    },
+                    "symbol": {
+                      "description": "US ticker, or 5-digit HK stock code such as 00700",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "symbol"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "trading_date": {
+                "description": "Trading day the data belongs to, market-local",
+                "format": "date",
+                "type": "string"
+              }
+            },
+            "required": [
+              "market",
+              "list_name",
+              "period",
+              "trading_date",
+              "is_today",
+              "stocks"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object",
+      "x-fastmcp-wrap-result": true
+    }
+  },
+  "tradetrack_history": {
+    "annotations": {
+      "idempotent_hint": true,
+      "open_world_hint": true,
+      "read_only_hint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "date_from": {
+          "format": "date",
+          "type": "string"
+        },
+        "date_to": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lists": {
+          "anyOf": [
+            {
+              "items": {
+                "enum": [
+                  "hot",
+                  "top_buy",
+                  "top_sell",
+                  "top_hold"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "market": {
+          "enum": [
+            "US",
+            "HK"
+          ],
+          "type": "string"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "market",
+        "date_from"
+      ],
+      "type": "object"
+    },
+    "outputSchema": {
+      "properties": {
+        "result": {
+          "items": {
+            "properties": {
+              "fetched_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "When the collector stored this snapshot (history only)"
+              },
+              "is_today": {
+                "description": "False before the day's first refresh: the data is the previous day's final",
+                "type": "boolean"
+              },
+              "list_name": {
+                "enum": [
+                  "hot",
+                  "top_buy",
+                  "top_sell",
+                  "top_hold"
+                ],
+                "type": "string"
+              },
+              "market": {
+                "enum": [
+                  "US",
+                  "HK"
+                ],
+                "type": "string"
+              },
+              "next_refresh_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "period": {
+                "enum": [
+                  "today",
+                  "yesterday",
+                  "last_month",
+                  "last_3_months",
+                  "last_6_months"
+                ],
+                "type": "string"
+              },
+              "refreshed_at": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "stocks": {
+                "items": {
+                  "properties": {
+                    "add_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_buy: % that added to existing positions; new + add = 100"
+                    },
+                    "avg_buy_price": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot, top_buy: average buy price, in `currency`"
+                    },
+                    "avg_sell_price": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot, top_sell: average sell price, in `currency`"
+                    },
+                    "buy_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot: % of HSBC investors' traded volume that was buying"
+                    },
+                    "currency": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "new_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_buy: % of the top 5%'s buying that opened new positions"
+                    },
+                    "rank_last_3_months": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_hold only"
+                    },
+                    "rank_last_6_months": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_hold only"
+                    },
+                    "rank_last_month": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "rank_today": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "Rank in today's top 10; null when not in it"
+                    },
+                    "rank_yesterday": {
+                      "anyOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "reduce_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_sell: % of the top 5%'s selling that only reduced"
+                    },
+                    "sell_all_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "top_sell: % that fully exited; reduce + sell_all = 100"
+                    },
+                    "sell_pct": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null,
+                      "description": "hot: % that was selling; buy_pct + sell_pct = 100"
+                    },
+                    "symbol": {
+                      "description": "US ticker, or 5-digit HK stock code such as 00700",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "symbol"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "trading_date": {
+                "description": "Trading day the data belongs to, market-local",
+                "format": "date",
+                "type": "string"
+              }
+            },
+            "required": [
+              "market",
+              "list_name",
+              "period",
+              "trading_date",
+              "is_today",
+              "stocks"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "result"
+      ],
+      "type": "object",
+      "x-fastmcp-wrap-result": true
+    }
+  }
+}
