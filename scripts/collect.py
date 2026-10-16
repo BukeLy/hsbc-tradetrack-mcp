@@ -26,6 +26,8 @@ LISTS = {
 ASSET_CLASSES = {"US": ["SEC"], "HK": ["SEC", "WRTS"]}
 TIMEZONES = {"US": ZoneInfo("America/New_York"), "HK": ZoneInfo("Asia/Hong_Kong")}
 DATE_TYPES = ["TODAY", "LAST_1_MONTH"]
+# Calendar fields that change after the close while the lists stay the same; ignored when deduping.
+CALENDAR_FIELDS = {"nearestTradingDate", "nextRefreshTime", "todayFigure"}
 USER_AGENT = "hsbc-tradetrack-mcp-collector (+https://github.com/BukeLy/hsbc-tradetrack-mcp)"
 
 
@@ -46,7 +48,8 @@ def session_day(raw: dict, market: str) -> str:
 
 
 def key(record: dict) -> tuple[str, str, str]:
-    raw = json.dumps(record["raw"], sort_keys=True).encode()
+    content = {k: v for k, v in record["raw"].items() if k not in CALENDAR_FIELDS}
+    raw = json.dumps(content, sort_keys=True).encode()
     return record["list"], record["dateType"], hashlib.sha256(raw).hexdigest()
 
 

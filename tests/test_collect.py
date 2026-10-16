@@ -22,3 +22,14 @@ def test_appends_once_per_snapshot_and_reports_failures(tmp_path):
     assert {json.loads(line)["list"] for line in lines} == {"hot", "top_buy", "top_sell"}
     # top_hold fails for both markets and both date types
     assert len(errors) == 4
+
+
+def test_same_lists_with_new_calendar_fields_are_not_appended_again(tmp_path):
+    def after_close(endpoint, market, date_type):
+        raw = fake_fetch(endpoint, market, date_type)
+        return {**raw, "nearestTradingDate": "2026-10-20T00:00:00.000+08:00", "todayFigure": False}
+
+    collect(tmp_path, fetch=fake_fetch)
+    collect(tmp_path, fetch=after_close)
+
+    assert len((tmp_path / "US" / "2026-10-16.jsonl").read_text().splitlines()) == 6
