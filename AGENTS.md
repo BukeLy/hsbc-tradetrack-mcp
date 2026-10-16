@@ -6,6 +6,8 @@
 
 The server is a stateless data source: it fetches live lists from HSBC and historical snapshots from the `data` branch, normalizes them, and returns them. Scheduling, strategy, signals and order execution belong to the agents that call it. The only state is an in-memory cache per request that expires at the response's `nextRefreshTime`.
 
+[`skills/`](skills/) holds example agent workflows that call the tools (strategy lives there, never in the server).
+
 The maintainer's private Horizon (FastMCP Cloud) deployment loads `src/hsbc_tradetrack_mcp/server.py:mcp` as a file, without installing the package, and redeploys on every push to `main`. So that module imports only third-party packages and the standard library, and `main` stays deployable.
 
 History lives on the orphan `data` branch as `<US|HK>/<YYYY-MM-DD>.jsonl`, appended by `.github/workflows/collect.yml` running `scripts/collect.py`. The server reads it through `raw.githubusercontent.com`, which needs no token and has no GitHub API rate limit. Keep collected data raw; interpretation belongs in server code.
