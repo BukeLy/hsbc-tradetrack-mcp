@@ -30,7 +30,17 @@ claude mcp add hsbc-tradetrack -- uvx hsbc-tradetrack-mcp
 }
 ```
 
-Before the first PyPI release, use `uvx --from git+https://github.com/BukeLy/hsbc-tradetrack-mcp hsbc-tradetrack-mcp` instead.
+### Self-host for remote and cloud agents
+
+Agents that need a URL rather than a local command (claude.ai, cloud-hosted agents, other machines) can run their own instance over streamable HTTP. There is no public instance.
+
+```bash
+FASTMCP_TRANSPORT=http FASTMCP_HOST=0.0.0.0 FASTMCP_PORT=8000 uvx hsbc-tradetrack-mcp
+```
+
+The endpoint is `http://<host>:8000/mcp`. Any platform that runs a command works (a VPS, Railway, Render, Fly.io); put TLS in front of it. The server has no auth of its own, so add your platform's access control if you don't want the URL to be open.
+
+On [FastMCP Cloud](https://gofastmcp.com/deployment/prefect-horizon), fork this repo and deploy it with the entrypoint `src/hsbc_tradetrack_mcp/server.py:mcp`; the free plan keeps the server private to your account.
 
 ### Tools
 
