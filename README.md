@@ -30,7 +30,17 @@ claude mcp add hsbc-tradetrack -- uvx hsbc-tradetrack-mcp
 }
 ```
 
-Before the first PyPI release, use `uvx --from git+https://github.com/BukeLy/hsbc-tradetrack-mcp hsbc-tradetrack-mcp` instead.
+### Self-host for remote and cloud agents
+
+Agents that need a URL rather than a local command (claude.ai, cloud-hosted agents, other machines) can run their own instance over streamable HTTP. There is no public instance.
+
+```bash
+FASTMCP_TRANSPORT=http FASTMCP_HOST=0.0.0.0 FASTMCP_PORT=8000 uvx hsbc-tradetrack-mcp
+```
+
+The endpoint is `http://<host>:8000/mcp`. Any platform that runs a command works (a VPS, Railway, Render, Fly.io); put TLS in front of it. The server has no auth of its own, so add your platform's access control if you don't want the URL to be open.
+
+On [FastMCP Cloud](https://gofastmcp.com/deployment/prefect-horizon), fork this repo and deploy it with the entrypoint `src/hsbc_tradetrack_mcp/server.py:mcp`; the free plan keeps the server private to your account.
 
 ### Tools
 
@@ -40,6 +50,18 @@ Before the first PyPI release, use `uvx --from git+https://github.com/BukeLy/hsb
 | `tradetrack_history` | `market`, `date_from`, `date_to` (≤ 31 days), `lists`, `symbol` | Every intraday snapshot collected since 2026-10-16 |
 
 Example prompt: *"Which US stocks are HSBC's top 5% traders buying today that they weren't buying yesterday?"*
+
+## Use with Interactive Brokers
+
+[`skills/tradetrack-follow`](skills/tradetrack-follow/SKILL.md) is an example agent workflow that follows the top 5% traders through [IBKR's official MCP connector](https://www.interactivebrokers.com/en/trading/ai-integrations.php): entries when they buy a stock two days in a row, exits when they sell out or a stop is hit. It drafts IBKR order instructions; nothing trades until you submit them in IBKR. The strategy is untested: use a paper account.
+
+```bash
+claude mcp add --transport http ibkr https://api.ibkr.com/v1/api/mcp-public
+curl -fsSL --create-dirs -o ~/.claude/skills/tradetrack-follow/SKILL.md \
+  https://raw.githubusercontent.com/BukeLy/hsbc-tradetrack-mcp/main/skills/tradetrack-follow/SKILL.md
+```
+
+Then run `/tradetrack-follow` in Claude Code, optionally with overrides such as "US only, stop loss 5%".
 
 ## Lists
 

@@ -1,0 +1,69 @@
+---
+name: tradetrack-follow
+description: Follow HSBC TradeTrack's top 5% traders with Interactive Brokers - turn today's TradeTrack lists into reviewed IBKR order instructions.
+disable-model-invocation: true
+---
+
+# Follow the top 5% with IBKR
+
+An example workflow, not investment advice. It joins two MCP servers:
+
+- **TradeTrack** (`hsbc-tradetrack-mcp`): tools `tradetrack` and `tradetrack_history`.
+- **Interactive Brokers** (IBKR's official connector): account, quotes, contracts, order instructions.
+
+The strategy has not been backtested. Run it on an IBKR paper account until it has been.
+
+## Parameters
+
+Use these defaults unless the user overrides one in their request. Echo the values in the report.
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `markets` | `US, HK` | Markets to scan |
+| `min_hot_buy_pct` | 60 | If the stock is on the hot list, its `buy_pct` must be at least this |
+| `exit_sell_all_pct` | 50 | Exit when the top 5% are fully exiting at least this share of their selling |
+| `stop_loss_pct` | 8 | Exit when price is this % below average cost |
+| `position_pct` | 5 | Target size of a new position, % of net liquidation value |
+| `max_positions` | 10 | Open positions this strategy may hold per market |
+| `limit_offset_pct` | 1 | Buy limit = last x (1 + offset); sell limit = last x (1 - offset) |
+| `exclude` | none | Held symbols the strategy must leave alone |
+
+## Signals
+
+Every STK position in the account counts as held by this strategy, for exits and for `max_positions`, except symbols in `exclude`. Positions carry no market field: `currency` USD means US, HKD means HK. A held stock is matched only against its own market's lists.
+
+- **Entry**: the stock is on `top_buy` with both `rank_today` and `rank_yesterday` set (the top 5% bought it two trading days in a row), it passes the hot-list check (absent from `hot`, or `buy_pct` >= `min_hot_buy_pct`), it does not meet the `top_sell` exit rule below (the top 5% can be buying and fully exiting the same stock), and it is not already held.
+- **Exit**, for each held stock, the first that applies:
+  - it is on `top_sell` with `sell_all_pct` >= `exit_sell_all_pct`;
+  - its `market_price` is `stop_loss_pct` or more below its `average_price`.
+
+## Steps
+
+1. **Fetch the lists.** Call `tradetrack` with `lists=["hot","top_buy","top_sell"]` for each market. `trading_date` is the session the lists belong to; between sessions it is the last session's final list, which is what an order before the next open should act on. The top 5% lists refresh three times a session (US 11:30, 13:00, 16:00 ET; HK 12:30, 15:30, 16:10 HKT) and `hot` every 30 minutes, so the signal is most complete after the last refresh. Report each list's `trading_date` and `refreshed_at`. Done when every market has its three lists.
+
+2. **Read the account.** Call `get_flow_type` once, then `get_account_summary` and `get_account_positions`. The connector does not return the account id: ask the user whether this session is a paper (`DU...`) or live account, and state it in the report. Done when you know the summary's `net_liquidation`, `available_funds` and `currency` (the base currency), and for every position its `contract_description` (symbol), `position` (quantity), `average_price`, `market_price`, `currency` and `contract_id`.
+
+3. **Resolve entry candidates.** Held stocks already have `contract_id` and `market_price` from step 2. For each entry candidate, call `search_contracts`:
+   - US: the row whose `symbol` equals the ticker exactly and whose `country_code` is `US`.
+   - HK: TradeTrack codes are zero-padded (`00700`). Search without leading zeros (`700`) and take the row whose `exchange` is `SEHK` and whose `symbol` equals that unpadded code exactly.
+   - Keep the row only if one of its `sections` has `security_type` `STK`. Other sections such as `OPT` or `WAR` are derivatives on the stock and do not disqualify it. The contract id is `underlying_contract_id`. No matching row: skip with "unresolved".
+
+   Then call `get_price_snapshot` with `market_data_names=["last","bid_ask"]`, adding `exchange: "SEHK"` for HK (without it the response is empty). The last price is `last.price`; if it is null, use the midpoint of `bid-ask`'s `bid` and `ask`; if both are missing, skip with "no quote". Done when every candidate has a contract id and a price, or a skip reason.
+
+4. **Decide.** Evaluate every exit before any entry. Then take entries by lowest `rank_today` on `top_buy` first, while open positions per market stay within `max_positions`.
+   - Size: the target is `position_pct`% of `net_liquidation`, in the base currency; convert it to the stock's currency before dividing. Quantity = `floor(target / price)`, keeping a running total within `available_funds`. Quantity 0: skip with "target below one share".
+   - HK trades in board lots that these tools do not expose: leave `quantity` unset, show the HKD target in the table, tell the user to set a whole number of lots, and warn that one lot may exceed the target.
+   - Exits sell the full `position`.
+   - Limit price: last x (1 + `limit_offset_pct`%) for buys, x (1 - `limit_offset_pct`%) for sells, rounded to a valid tick. US: $0.01. HK (HKEX spread table): 0.001 up to 0.25, 0.005 to 0.50, 0.01 to 10, 0.02 to 20, 0.05 to 100, 0.10 to 200, 0.20 to 500, 0.50 to 1,000, 1 to 2,000, 2 to 5,000, 5 above.
+
+   Done when every candidate and every held stock has a decision: buy, sell, hold, or skip with the reason.
+
+5. **Confirm, then place.** Show the decision table (market, symbol, signal, list figures, price, side, quantity or HKD target, limit) and wait for the user's go-ahead. Then:
+   - `REVIEW_AND_APPROVE`: `create_order_instruction` per approved decision with `contract_id_ex` (the contract id as a string), `side` (`"BUY"` or `"SELL"`), `quantity` (omit for HK buys), `order_type: "LIMIT"`, `limit_price`, `time_in_force: "DAY"`. Give the user each returned URL; nothing trades until they submit it in IBKR.
+   - `AUTONOMOUS`: place the same orders with `submit_order`, following its own preview and question steps.
+
+   Done when every approved decision has an instruction URL or an order id, and failures are reported with the error text.
+
+## Report
+
+End with: parameters used, paper or live, `trading_date` and `refreshed_at` per list, the decision table, instruction URLs or order ids, and everything skipped with its reason.
