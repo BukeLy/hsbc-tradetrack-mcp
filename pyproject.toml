@@ -1,0 +1,38 @@
+[project]
+name = "hsbc-tradetrack-mcp"
+version = "0.0.0"
+description = "Unofficial MCP server for HSBC TradeTrack (汇丰交易追踪): trending stocks and top-5% traders' buy/sell/hold lists for US & HK, from HSBC's public no-login endpoints."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "BukeLy" }]
+keywords = ["hsbc", "tradetrack", "mcp", "mcp-server", "fastmcp", "trending-stocks", "us-stocks", "hong-kong-stocks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = ["fastmcp>=4.1,<5"]
+
+[project.urls]
+Repository = "https://github.com/BukeLy/hsbc-tradetrack-mcp"
+Changelog = "https://github.com/BukeLy/hsbc-tradetrack-mcp/blob/main/CHANGELOG.md"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.17"]
+
+[build-system]
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["scripts"]

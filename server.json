@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.BukeLy/hsbc-tradetrack-mcp",
+  "title": "HSBC TradeTrack",
+  "description": "HSBC TradeTrack trending stocks and top-5% traders' buy/sell/hold lists (US & HK), no login.",
+  "repository": {
+    "url": "https://github.com/BukeLy/hsbc-tradetrack-mcp",
+    "source": "github"
+  },
+  "version": "0.0.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "hsbc-tradetrack-mcp",
+      "version": "0.0.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
