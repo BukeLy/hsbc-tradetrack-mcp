@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/banner.jpg" alt="TradeTrack MCP" width="100%">
+</p>
+
 # hsbc-tradetrack-mcp
 
 Unofficial MCP server for **HSBC TradeTrack** (汇丰交易追踪 / 匯豐交易追蹤): the US and Hong Kong stocks HSBC personal banking investors trade most, and what HSBC's top 5% performing traders buy, sell and hold.

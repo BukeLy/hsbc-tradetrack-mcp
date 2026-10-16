@@ -15,6 +15,7 @@ from typing import Any, Literal
 import httpx2
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
+from mcp.types import Icon
 from pydantic import BaseModel, Field
 
 REPO_URL = "https://github.com/BukeLy/hsbc-tradetrack-mcp"
@@ -23,6 +24,7 @@ HSBC_BASE = (
     "wealth-trade-equity-public-shp-api-hk-hbap-prod-proxy/v0/equities/public/srbp/hk/online/"
 )
 HISTORY_BASE = "https://raw.githubusercontent.com/BukeLy/hsbc-tradetrack-mcp/data/"
+LOGO_URL = "https://raw.githubusercontent.com/BukeLy/hsbc-tradetrack-mcp/main/docs/assets/logo.png"
 ENDPOINTS = {
     "hot": "top-active-traded-products",
     "top_buy": "top-buying-products",
@@ -191,6 +193,7 @@ mcp = FastMCP(
     ),
     version=__version__,
     website_url=REPO_URL,
+    icons=[Icon(src=LOGO_URL, mimeType="image/png", sizes=["512x512"])],
 )
 READ_ONLY = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": True}
 
