@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "pull-request-title-pattern": "chore: release ${version}",
   "packages": {
     ".": {
       "release-type": "python",
@@ -7,9 +8,21 @@
       "include-component-in-tag": false,
       "bump-minor-pre-major": true,
       "extra-files": [
-        { "type": "json", "path": "server.json", "jsonpath": "$.version" },
-        { "type": "json", "path": "server.json", "jsonpath": "$.packages[0].version" },
-        { "type": "toml", "path": "uv.lock", "jsonpath": "$.package[?(@.name.value=='hsbc-tradetrack-mcp')].version" }
+        {
+          "type": "json",
+          "path": "server.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "server.json",
+          "jsonpath": "$.packages[0].version"
+        },
+        {
+          "type": "toml",
+          "path": "uv.lock",
+          "jsonpath": "$.package[?(@.name.value=='hsbc-tradetrack-mcp')].version"
+        }
       ]
     }
   }
