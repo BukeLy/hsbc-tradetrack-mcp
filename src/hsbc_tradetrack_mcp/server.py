@@ -9,7 +9,7 @@ import json
 import time
 from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime, timedelta
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Literal
 
 import httpx2
@@ -40,7 +40,10 @@ DATE_TYPES = {
 HOLDINGS_ONLY_PERIODS = {"last_3_months", "last_6_months"}
 MAX_HISTORY_DAYS = 31
 
-__version__ = version("hsbc-tradetrack-mcp")
+try:
+    __version__ = version("hsbc-tradetrack-mcp")
+except PackageNotFoundError:  # Horizon runs this file without installing the package
+    __version__ = "0+unknown"
 
 Market = Literal["US", "HK"]
 ListName = Literal["hot", "top_buy", "top_sell", "top_hold"]
