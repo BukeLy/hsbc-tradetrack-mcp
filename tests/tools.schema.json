@@ -305,7 +305,7 @@
                 "type": "array"
               },
               "trading_date": {
-                "description": "Trading day the data belongs to, market-local",
+                "description": "Session the data belongs to: market-local date of refreshed_at",
                 "format": "date",
                 "type": "string"
               }
@@ -653,7 +653,7 @@
                 "type": "array"
               },
               "trading_date": {
-                "description": "Trading day the data belongs to, market-local",
+                "description": "Session the data belongs to: market-local date of refreshed_at",
                 "format": "date",
                 "type": "string"
               }

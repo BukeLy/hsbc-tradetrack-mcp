@@ -11,6 +11,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, date, datetime, timedelta
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Literal
+from zoneinfo import ZoneInfo
 
 import httpx2
 from fastmcp import FastMCP
@@ -32,6 +33,7 @@ ENDPOINTS = {
     "top_hold": "top-holdings",
 }
 ASSET_CLASSES = {"US": ["SEC"], "HK": ["SEC", "WRTS"]}
+TIMEZONES = {"US": ZoneInfo("America/New_York"), "HK": ZoneInfo("Asia/Hong_Kong")}
 DATE_TYPES = {
     "today": "TODAY",
     "yesterday": "LAST_1_DAY",
@@ -75,7 +77,7 @@ class Snapshot(BaseModel):
     market: Market
     list_name: ListName
     period: Period
-    trading_date: date = Field(description="Trading day the data belongs to, market-local")
+    trading_date: date = Field(description="Session the data belongs to: market-local date of refreshed_at")
     is_today: bool = Field(description="False before the day's first refresh: the data is the previous day's final")
     refreshed_at: datetime | None = None
     next_refresh_at: datetime | None = None
@@ -85,6 +87,14 @@ class Snapshot(BaseModel):
 
 def _complement(pct: float | None) -> float | None:
     return None if pct is None else 100 - pct
+
+
+def _session_day(market: Market, raw: dict) -> str:
+    # nearestTradingDate jumps to the next session once a session closes; the refresh time does not
+    refreshed = raw.get("currentRefreshTime")
+    if not refreshed:
+        return raw["nearestTradingDate"][:10]
+    return datetime.fromisoformat(refreshed).astimezone(TIMEZONES[market]).date().isoformat()
 
 
 def _normalize(
@@ -117,7 +127,7 @@ def _normalize(
         market=market,
         list_name=list_name,
         period=period,
-        trading_date=raw["nearestTradingDate"][:10],
+        trading_date=_session_day(market, raw),
         is_today=raw.get("todayFigure", True),
         refreshed_at=raw.get("currentRefreshTime"),
         next_refresh_at=raw.get("nextRefreshTime"),

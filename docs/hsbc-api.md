@@ -21,7 +21,7 @@ GET https://investments4.personal-banking.hsbc.com.hk/api/wealth-trade-equity-pu
 
 ## Endpoints and field semantics
 
-Every endpoint returns `currentRefreshTime`, `nextRefreshTime`, `nearestTradingDate` (trading day, market-local), `todayFigure` (false before the first refresh of the day), `currentMarket`, and a 10-item list. Each item has `productId.productAlternativeNumber` (ticker / HK code), `rankToday`, `rankYesterday`, `rankLastMonth` (null = not in that period's top 10), `currencyProductCode`.
+Every endpoint returns `currentRefreshTime`, `nextRefreshTime`, `nearestTradingDate` (HSBC's nearest trading day: it jumps to the next session as soon as a session's last refresh is out, so the session a response belongs to is the market-local date of `currentRefreshTime`), `todayFigure` (false before the first refresh of the day), `currentMarket`, and a 10-item list. Each item has `productId.productAlternativeNumber` (ticker / HK code), `rankToday`, `rankYesterday`, `rankLastMonth` (null = not in that period's top 10), `currencyProductCode`.
 
 | Endpoint | List | Extra fields |
 |---|---|---|

@@ -24,7 +24,7 @@ def payload(*items, refreshed="2026-10-16T14:00:00-04:00", next_refresh="2999-01
         "todayFigure": True,
         "currentRefreshTime": refreshed,
         "nextRefreshTime": next_refresh,
-        "nearestTradingDate": "2026-10-16T00:00:00.000+08:00",
+        "nearestTradingDate": "2026-10-19T00:00:00.000+08:00",
         "topList": list(items),
     }
 
