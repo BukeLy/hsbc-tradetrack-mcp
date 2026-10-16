@@ -1,6 +1,6 @@
 [project]
 name = "hsbc-tradetrack-mcp"
-version = "0.0.0"
+version = "0.1.0"
 description = "Unofficial MCP server for HSBC TradeTrack (汇丰交易追踪): trending stocks and top-5% traders' buy/sell/hold lists for US & HK, from HSBC's public no-login endpoints."
 readme = "README.md"
 license = "MIT"
