@@ -7,6 +7,15 @@
     "url": "https://github.com/BukeLy/hsbc-tradetrack-mcp",
     "source": "github"
   },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/BukeLy/hsbc-tradetrack-mcp/main/docs/assets/logo.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    }
+  ],
   "version": "0.0.0",
   "packages": [
     {
