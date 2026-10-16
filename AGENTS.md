@@ -6,8 +6,6 @@
 
 The server is a stateless data source: it fetches live lists from HSBC and historical snapshots from the `data` branch, normalizes them, and returns them. Scheduling, strategy, signals and order execution belong to the agents that call it. The only state is an in-memory cache per request that expires at the response's `nextRefreshTime`.
 
-Horizon (FastMCP Cloud) loads `src/hsbc_tradetrack_mcp/server.py:mcp` as a file, without installing the package, so that module imports only third-party packages and the standard library.
-
 History lives on the orphan `data` branch as `<US|HK>/<YYYY-MM-DD>.jsonl`, appended by `.github/workflows/collect.yml` running `scripts/collect.py`. The server reads it through `raw.githubusercontent.com`, which needs no token and has no GitHub API rate limit. Keep collected data raw; interpretation belongs in server code.
 
 ## Tool contract
@@ -36,9 +34,8 @@ Unit tests run offline: inject HTTP responses with `httpx.MockTransport` and use
 ## Pull requests and releases
 
 - Squash merge only. The PR title becomes the commit on `main`, so it must be a Conventional Commit: `type(scope)!: subject`, English, imperative, lowercase subject, at most 72 characters. Types: `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `revert`. Optional scopes: `tools` `client` `data` `deps` `deps-dev` `ci`.
-- Fill in `.github/pull_request_template.md`; "How verified" shows a real call or the Horizon preview URL.
+- Fill in `.github/pull_request_template.md`; "How verified" shows a real tool call.
 - release-please owns `CHANGELOG.md` and every version string (`pyproject.toml`, `uv.lock`, `server.json`). Merging its Release PR tags `vX.Y.Z`, publishes to PyPI with trusted publishing, then to the MCP Registry.
-- Every push to `main` redeploys the public Horizon (FastMCP Cloud) instance, so `main` stays deployable.
 
 ## Workflows
 

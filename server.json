@@ -8,12 +8,6 @@
     "source": "github"
   },
   "version": "0.0.0",
-  "remotes": [
-    {
-      "type": "streamable-http",
-      "url": "https://hsbc-tradetrack-mcp.fastmcp.app/mcp"
-    }
-  ],
   "packages": [
     {
       "registryType": "pypi",

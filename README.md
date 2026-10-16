@@ -12,33 +12,7 @@ All data comes from HSBC's **public, no-login endpoints** (the same ones behind 
 
 ## Quick start
 
-### Hosted: nothing to install
-
-A public instance runs on FastMCP Cloud, no auth:
-
-```
-https://hsbc-tradetrack-mcp.fastmcp.app/mcp
-```
-
-Claude Code:
-
-```bash
-claude mcp add --transport http hsbc-tradetrack https://hsbc-tradetrack-mcp.fastmcp.app/mcp
-```
-
-Any client that takes an `mcpServers` JSON config (Cursor, Windsurf, ...):
-
-```json
-{
-  "mcpServers": {
-    "hsbc-tradetrack": { "url": "https://hsbc-tradetrack-mcp.fastmcp.app/mcp" }
-  }
-}
-```
-
-### Local: run it yourself over stdio
-
-Needs [uv](https://docs.astral.sh/uv/). Requests then go from your machine straight to HSBC.
+Runs locally over stdio and needs [uv](https://docs.astral.sh/uv/). Requests go from your machine straight to HSBC.
 
 ```bash
 claude mcp add hsbc-tradetrack -- uvx hsbc-tradetrack-mcp
