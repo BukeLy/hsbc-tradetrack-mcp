@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1](https://github.com/BukeLy/hsbc-tradetrack-mcp/compare/v0.1.0...v0.1.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **data:** date snapshots by their refresh time ([#9](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/9)) ([7db4acc](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/7db4acc11ee06fcb55f03943f1134eaf959bf8f9))
+
+
+### Documentation
+
+* add tradetrack-follow skill for interactive brokers ([#8](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/8)) ([7ed2d54](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/7ed2d54982366ae98a8f6ded4840d3cfcc88e64b))
+
 ## 0.1.0 (2026-10-16)
 
 
