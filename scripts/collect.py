@@ -11,6 +11,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 BASE = (
     "https://investments4.personal-banking.hsbc.com.hk/api/"
@@ -23,6 +24,7 @@ LISTS = {
     "top_hold": "top-holdings",
 }
 ASSET_CLASSES = {"US": ["SEC"], "HK": ["SEC", "WRTS"]}
+TIMEZONES = {"US": ZoneInfo("America/New_York"), "HK": ZoneInfo("Asia/Hong_Kong")}
 DATE_TYPES = ["TODAY", "LAST_1_MONTH"]
 USER_AGENT = "hsbc-tradetrack-mcp-collector (+https://github.com/BukeLy/hsbc-tradetrack-mcp)"
 
@@ -33,6 +35,14 @@ def fetch(endpoint: str, market: str, date_type: str) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.load(resp)
+
+
+def session_day(raw: dict, market: str) -> str:
+    """Market-local date of the refresh. nearestTradingDate jumps to the next session once a session closes."""
+    refreshed = raw.get("currentRefreshTime")
+    if not refreshed:
+        return raw["nearestTradingDate"][:10]
+    return datetime.fromisoformat(refreshed).astimezone(TIMEZONES[market]).date().isoformat()
 
 
 def key(record: dict) -> tuple[str, str, str]:
@@ -49,7 +59,7 @@ def collect(out: Path, fetch=fetch) -> list[str]:
             for date_type in DATE_TYPES:
                 try:
                     raw = fetch(endpoint, market, date_type)
-                    day = raw["nearestTradingDate"][:10]
+                    day = session_day(raw, market)
                 except Exception as e:  # noqa: BLE001 - one failing list must not stop the others
                     errors.append(f"{market} {name} {date_type}: {e!r}")
                     continue
