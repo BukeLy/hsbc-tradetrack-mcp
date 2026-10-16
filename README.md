@@ -8,7 +8,60 @@ All data comes from HSBC's **public, no-login endpoints** (the same ones behind 
 
 <!-- mcp-name: io.github.BukeLy/hsbc-tradetrack-mcp -->
 
-> **Status:** work in progress. The MCP tools are not released yet; historical snapshots are already being collected (see below).
+> **Status:** early (0.x). The tool schema may still change between minor versions.
+
+## Quick start
+
+### Hosted: nothing to install
+
+A public instance runs on FastMCP Cloud, no auth:
+
+```
+https://hsbc-tradetrack-mcp.fastmcp.app/mcp
+```
+
+Claude Code:
+
+```bash
+claude mcp add --transport http hsbc-tradetrack https://hsbc-tradetrack-mcp.fastmcp.app/mcp
+```
+
+Any client that takes an `mcpServers` JSON config (Cursor, Windsurf, ...):
+
+```json
+{
+  "mcpServers": {
+    "hsbc-tradetrack": { "url": "https://hsbc-tradetrack-mcp.fastmcp.app/mcp" }
+  }
+}
+```
+
+### Local: run it yourself over stdio
+
+Needs [uv](https://docs.astral.sh/uv/). Requests then go from your machine straight to HSBC.
+
+```bash
+claude mcp add hsbc-tradetrack -- uvx hsbc-tradetrack-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "hsbc-tradetrack": { "command": "uvx", "args": ["hsbc-tradetrack-mcp"] }
+  }
+}
+```
+
+Before the first PyPI release, use `uvx --from git+https://github.com/BukeLy/hsbc-tradetrack-mcp hsbc-tradetrack-mcp` instead.
+
+### Tools
+
+| Tool | Arguments | Returns |
+|---|---|---|
+| `tradetrack` | `market` (`US`/`HK`), `lists` (default: all four), `period` (`today`, `yesterday`, `last_month`; `last_3_months`/`last_6_months` for `top_hold`) | Latest lists |
+| `tradetrack_history` | `market`, `date_from`, `date_to` (≤ 31 days), `lists`, `symbol` | Every intraday snapshot collected since 2026-10-16 |
+
+Example prompt: *"Which US stocks are HSBC's top 5% traders buying today that they weren't buying yesterday?"*
 
 ## Lists
 
