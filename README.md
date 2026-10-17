@@ -63,6 +63,8 @@ curl -fsSL --create-dirs -o ~/.claude/skills/tradetrack-follow/SKILL.md \
 
 Then run `/tradetrack-follow` in Claude Code, optionally with overrides such as "US only, stop loss 5%".
 
+To run it as a scheduled task, schedule it on weekdays after the last refresh (US 16:30 ET) with a prompt such as "unattended, live account, US only": it then drafts instructions without asking, skips a market that did not trade that day, and skips stocks that already have a draft or working order. In ChatGPT, add this server (see [Self-host](#self-host-for-remote-and-cloud-agents)) and the Interactive Brokers plugin, then give `SKILL.md` to Plugin Creator to bundle the three.
+
 ## Lists
 
 | List | What it shows | US refresh (ET) | HK refresh (HKT) |

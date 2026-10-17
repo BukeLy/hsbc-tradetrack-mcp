@@ -13,6 +13,8 @@ An example workflow, not investment advice. It joins two MCP servers:
 
 The strategy has not been backtested. Run it on an IBKR paper account until it has been.
 
+A run is **unattended** when the request says so, for example a scheduled task. Nobody answers during an unattended run, so each step that asks or waits carries an unattended rule.
+
 ## Parameters
 
 Use these defaults unless the user overrides one in their request. Echo the values in the report.
@@ -39,9 +41,12 @@ Every STK position in the account counts as held by this strategy, for exits and
 
 ## Steps
 
-1. **Fetch the lists.** Call `tradetrack` with `lists=["hot","top_buy","top_sell"]` for each market. `trading_date` is the session the lists belong to; between sessions it is the last session's final list, which is what an order before the next open should act on. The top 5% lists refresh three times a session (US 11:30, 13:00, 16:00 ET; HK 12:30, 15:30, 16:10 HKT) and `hot` every 30 minutes, so the signal is most complete after the last refresh. Report each list's `trading_date` and `refreshed_at`. Done when every market has its three lists.
+1. **Fetch the lists.** Call `tradetrack` with `lists=["hot","top_buy","top_sell"]` for each market. `trading_date` is the session the lists belong to; between sessions it is the last session's final list, which is what an order before the next open should act on. The top 5% lists refresh three times a session (US 11:30, 13:00, 16:00 ET; HK 12:30, 15:30, 16:10 HKT) and `hot` every 30 minutes, so the signal is most complete after the last refresh. Report each list's `trading_date` and `refreshed_at`.
+   - Unattended: the run is scheduled after the market's last refresh. A market whose `top_buy` `trading_date` is not today in its time zone (US America/New_York, HK Asia/Hong_Kong) did not trade today: report it as closed and drop it from the run.
 
-2. **Read the account.** Call `get_flow_type` once, then `get_account_summary` and `get_account_positions`. The connector does not return the account id: ask the user whether this session is a paper (`DU...`) or live account, and state it in the report. Done when you know the summary's `net_liquidation`, `available_funds` and `currency` (the base currency), and for every position its `contract_description` (symbol), `position` (quantity), `average_price`, `market_price`, `currency` and `contract_id`.
+   Done when every remaining market has its three lists.
+
+2. **Read the account.** Call `get_flow_type` once, then `get_account_summary`, `get_account_positions`, `get_order_instructions` and `get_account_orders`. The connector does not return the account id: take paper (`DU...`) or live from the request, otherwise ask the user (unattended: stop with "account type not stated"), and state it in the report. Done when you know the summary's `net_liquidation`, `available_funds` and `currency` (the base currency); for every position its `contract_description` (symbol), `position` (quantity), `average_price`, `market_price`, `currency` and `contract_id`; and the **pending** set: each saved instruction's `contract_id_ex` and `side`, and each working order's symbol and side (from `primary_description`, such as `Buy 1 SPCX`).
 
 3. **Resolve entry candidates.** Held stocks already have `contract_id` and `market_price` from step 2. For each entry candidate, call `search_contracts`:
    - US: the row whose `symbol` equals the ticker exactly and whose `country_code` is `US`.
@@ -55,10 +60,11 @@ Every STK position in the account counts as held by this strategy, for exits and
    - HK trades in board lots that these tools do not expose: leave `quantity` unset, show the HKD target in the table, tell the user to set a whole number of lots, and warn that one lot may exceed the target.
    - Exits sell the full `position`.
    - Limit price: last x (1 + `limit_offset_pct`%) for buys, x (1 - `limit_offset_pct`%) for sells, rounded to a valid tick. US: $0.01. HK (HKEX spread table): 0.001 up to 0.25, 0.005 to 0.50, 0.01 to 10, 0.02 to 20, 0.05 to 100, 0.10 to 200, 0.20 to 500, 0.50 to 1,000, 1 to 2,000, 2 to 5,000, 5 above.
+   - A buy or sell whose stock and side are already in the pending set: skip with "already pending". An earlier run's draft or order covers it, and repeat runs stay idempotent.
 
    Done when every candidate and every held stock has a decision: buy, sell, hold, or skip with the reason.
 
-5. **Confirm, then place.** Show the decision table (market, symbol, signal, list figures, price, side, quantity or HKD target, limit) and wait for the user's go-ahead. Then:
+5. **Confirm, then place.** Show the decision table (market, symbol, signal, list figures, price, side, quantity or HKD target, limit) and wait for the user's go-ahead. Unattended: go ahead in `REVIEW_AND_APPROVE`, where every instruction still waits for the user in IBKR; in `AUTONOMOUS`, place nothing and end with the report. Then:
    - `REVIEW_AND_APPROVE`: `create_order_instruction` per approved decision with `contract_id_ex` (the contract id as a string), `side` (`"BUY"` or `"SELL"`), `quantity` (omit for HK buys), `order_type: "LIMIT"`, `limit_price`, `time_in_force: "DAY"`. Give the user each returned URL; nothing trades until they submit it in IBKR.
    - `AUTONOMOUS`: place the same orders with `submit_order`, following its own preview and question steps.
 
