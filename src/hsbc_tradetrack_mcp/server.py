@@ -240,7 +240,7 @@ async def tradetrack_history(
     lists: list[ListName] | None = None,
     symbol: str | None = None,
 ) -> list[Snapshot]:
-    """Past intraday snapshots of the "today" lists, one per HSBC refresh, collected since 2026-10-16.
+    """Past intraday snapshots of the "today" lists, one per HSBC refresh, oldest first, collected since 2026-10-16.
 
     Dates are trading days (market-local), inclusive, at most 31 days per call. Pass `symbol` to keep only
     snapshots that contain that stock (HK codes may omit leading zeros). Days without trading return nothing.
@@ -276,6 +276,8 @@ async def tradetrack_history(
                 if not snapshot.stocks:
                     continue
             snapshots.append(snapshot)
+    # a day file can be out of order (backfills merge into it)
+    snapshots.sort(key=lambda s: s.refreshed_at or s.fetched_at)
     return snapshots
 
 
