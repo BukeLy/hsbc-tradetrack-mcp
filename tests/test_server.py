@@ -99,22 +99,23 @@ async def test_live_errors_are_actionable(http):
 
 
 @pytest.mark.anyio
-async def test_history_reads_today_snapshots_and_filters_symbol(http):
+async def test_history_reads_today_snapshots_in_refresh_order_and_filters_symbol(http):
     routes, _ = http
 
-    def record(list_name, date_type, *items):
+    def record(list_name, date_type, *items, refreshed="2026-10-16T14:00:00+08:00"):
         return json.dumps(
             {
                 "list": list_name,
                 "dateType": date_type,
                 "fetched_at": "2026-10-16T18:00:00+00:00",
-                "raw": payload(*items),
+                "raw": payload(*items, refreshed=refreshed),
             }
         )
 
     day_file = "\n".join(
         [
             record("hot", "TODAY", item("00700"), item("09988")),
+            record("hot", "TODAY", item("00700"), refreshed="2026-10-16T10:00:00+08:00"),
             record("hot", "LAST_1_MONTH", item("00700")),
             record("top_buy", "TODAY", item("09988")),
         ]
@@ -126,7 +127,10 @@ async def test_history_reads_today_snapshots_and_filters_symbol(http):
         "tradetrack_history", market="HK", date_from="2026-10-16", date_to="2026-10-17", symbol="700"
     )
 
-    assert [(s["list_name"], [x["symbol"] for x in s["stocks"]]) for s in snapshots] == [("hot", ["00700"])]
+    assert [(s["refreshed_at"], [x["symbol"] for x in s["stocks"]]) for s in snapshots] == [
+        ("2026-10-16T10:00:00+08:00", ["00700"]),
+        ("2026-10-16T14:00:00+08:00", ["00700"]),
+    ]
     assert snapshots[0]["fetched_at"].startswith("2026-10-16T18:00")
 
     with pytest.raises(ToolError, match="at most 31 days"):
