@@ -17,24 +17,31 @@ A run is **unattended** when the request says so, for example a scheduled task. 
 
 ## Parameters
 
-Use these defaults unless the user overrides one in their request. Echo the values in the report.
+Use these defaults unless the user overrides one in their request. Echo the values in the report. Each default cites its basis; until a backtest on the `data` branch replaces them, they lean conservative: fewer, stronger entries and earlier exits.
 
-| Parameter | Default | Meaning |
-|---|---|---|
-| `markets` | `US, HK` | Markets to scan |
-| `min_hot_buy_pct` | 60 | If the stock is on the hot list, its `buy_pct` must be at least this |
-| `exit_sell_all_pct` | 50 | Exit when the top 5% are fully exiting at least this share of their selling |
-| `stop_loss_pct` | 8 | Exit when price is this % below average cost |
-| `position_pct` | 5 | Target size of a new position, % of net liquidation value |
-| `max_positions` | 10 | Open positions this strategy may hold per market |
-| `limit_offset_pct` | 1 | Buy limit = last x (1 + offset); sell limit = last x (1 - offset) |
-| `exclude` | none | Held symbols the strategy must leave alone |
+| Parameter | Default | Meaning | Basis |
+|---|---|---|---|
+| `markets` | `US, HK` | Markets to scan | |
+| `buy_days` | 2 | Consecutive trading days on `top_buy` before an entry (1 or 2) | [1] |
+| `min_hot_buy_pct` | 80 | If the stock is on the hot list, its `buy_pct` must be at least this | [2] |
+| `exit_sell_all_pct` | 0 | Exit when the stock is on `top_sell` with `sell_all_pct` at least this; 0 exits on any appearance | [3] |
+| `stop_loss_pct` | 7 | Exit when price is this % below average cost | [4] |
+| `position_pct` | 5 | Target size of a new position, % of net liquidation value | [5] |
+| `max_positions` | 10 | Open positions this strategy may hold, all markets together | [6] |
+| `exclude` | none | Held symbols the strategy must leave alone | |
+
+1. Daily order imbalance persists: first-lag autocorrelation about 23% (Chordia & Subrahmanyam, "Order imbalance and individual stock returns", *JFE* 72, 2004, 485–518). No study compares 1 with 2 days; 2 is the conservative choice.
+2. Order-flow studies call the top quintile of buy imbalance strong (Barber, Odean & Zhu, *RFS* 22(1), 2009; Boehmer, Jones, Zhang & Zhang, *JF* 76(5), 2021). 80 sits above the 75th percentile of retail buy share (65.7%) and below the top-decile midpoint (92.3%) in Kelley & Tetlock, *JF* 68(3), 2013, Table I.
+3. No source gives a threshold, and selling carries little information (Lakonishok & Lee, *RFS* 14(1), 2001; Chen, Jegadeesh & Wermers, *JFQA* 35(3), 2000). 0 is the earliest exit; the stop loss is the main risk exit.
+4. "Always, without Exception, Limit Your Losses to 7% or 8% of Your Cost" (O'Neil, *How to Make Money in Stocks*, 4th ed., 2009, ch. 10, pp. 242–244). 7 is the conservative end.
+5. A diversified fund holds at most 5% of total assets in one issuer ([15 U.S.C. 80a-5(b)(1)](https://www.law.cornell.edu/uscode/text/15/80a-5)); FINRA reports experts capping one stock at 10% ([FINRA](https://www.finra.org/investors/insights/love-your-company-stock-what-to-know)).
+6. "If you're uncomfortable and nervous with only six or seven, then own ten" (O'Neil 2009, ch. 12, pp. 273–275), for a whole portfolio.
 
 ## Signals
 
 Every STK position in the account counts as held by this strategy, for exits and for `max_positions`, except symbols in `exclude`. Positions carry no market field: `currency` USD means US, HKD means HK. A held stock is matched only against its own market's lists.
 
-- **Entry**: the stock is on `top_buy` with both `rank_today` and `rank_yesterday` set (the top 5% bought it two trading days in a row), it passes the hot-list check (absent from `hot`, or `buy_pct` >= `min_hot_buy_pct`), it does not meet the `top_sell` exit rule below (the top 5% can be buying and fully exiting the same stock), and it is not already held.
+- **Entry**: the stock is on `top_buy` with `rank_today` set, and also `rank_yesterday` when `buy_days` is 2 (the top 5% bought it two trading days in a row); it passes the hot-list check (absent from `hot`, or `buy_pct` >= `min_hot_buy_pct`), it does not meet the `top_sell` exit rule below (the top 5% can be buying and selling the same stock), and it is not already held.
 - **Exit**, for each held stock, the first that applies:
   - it is on `top_sell` with `sell_all_pct` >= `exit_sell_all_pct`;
   - its `market_price` is `stop_loss_pct` or more below its `average_price`.
@@ -53,13 +60,13 @@ Every STK position in the account counts as held by this strategy, for exits and
    - HK: TradeTrack codes are zero-padded (`00700`). Search without leading zeros (`700`) and take the row whose `exchange` is `SEHK` and whose `symbol` equals that unpadded code exactly.
    - Keep the row only if one of its `sections` has `security_type` `STK`. Other sections such as `OPT` or `WAR` are derivatives on the stock and do not disqualify it. The contract id is `underlying_contract_id`. No matching row: skip with "unresolved".
 
-   Then call `get_price_snapshot` with `market_data_names=["last","bid_ask"]`, adding `exchange: "SEHK"` for HK (without it the response is empty). The last price is `last.price`; if it is null, use the midpoint of `bid-ask`'s `bid` and `ask`; if both are missing, skip with "no quote". Done when every candidate has a contract id and a price, or a skip reason.
+   Then call `get_price_snapshot` with `market_data_names=["last","bid_ask"]` for each entry candidate and each exit, adding `exchange: "SEHK"` for HK (without it the response is empty). The price is `bid-ask`'s `ask` for a buy and `bid` for a sell; if it is missing, use `last.price`; if both are missing, skip with "no quote". Quotes already sit on a valid tick, so the price needs no rounding. Done when every candidate and exit has a contract id and a price, or a skip reason.
 
-4. **Decide.** Evaluate every exit before any entry. Then take entries by lowest `rank_today` on `top_buy` first, while open positions per market stay within `max_positions`.
+4. **Decide.** Evaluate every exit before any entry. Then take entries by lowest `rank_today` on `top_buy` first, while open positions across all markets stay within `max_positions`.
    - Size: the target is `position_pct`% of `net_liquidation`, in the base currency; convert it to the stock's currency before dividing. Quantity = `floor(target / price)`, keeping a running total within `available_funds`. Quantity 0: skip with "target below one share".
    - HK trades in board lots that these tools do not expose: leave `quantity` unset, show the HKD target in the table, tell the user to set a whole number of lots, and warn that one lot may exceed the target.
    - Exits sell the full `position`.
-   - Limit price: last x (1 + `limit_offset_pct`%) for buys, x (1 - `limit_offset_pct`%) for sells, rounded to a valid tick. US: $0.01. HK (HKEX spread table): 0.001 up to 0.25, 0.005 to 0.50, 0.01 to 10, 0.02 to 20, 0.05 to 100, 0.10 to 200, 0.20 to 500, 0.50 to 1,000, 1 to 2,000, 2 to 5,000, 5 above.
+   - Limit price: the step 3 price, so a buy pays at most the ask and a sell takes at least the bid. HKEX rejects a limit buy above the best ask ([trading mechanism](https://www.hkex.com.hk/Services/Trading/Securities/Overview/Trading-Mechanism?sc_lang=en)), which rules out any premium in HK.
    - A buy or sell whose stock and side are already in the pending set: skip with "already pending". An earlier run's draft or order covers it, and repeat runs stay idempotent.
 
    Done when every candidate and every held stock has a decision: buy, sell, hold, or skip with the reason.
