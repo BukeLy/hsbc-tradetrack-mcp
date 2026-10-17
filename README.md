@@ -53,7 +53,7 @@ Example prompt: *"Which US stocks are HSBC's top 5% traders buying today that th
 
 ## Use with Interactive Brokers
 
-[`skills/tradetrack-follow`](skills/tradetrack-follow/SKILL.md) is an example agent workflow that follows the top 5% traders through [IBKR's official MCP connector](https://www.interactivebrokers.com/en/trading/ai-integrations.php): entries when they buy a stock two days in a row, exits when they sell out or a stop is hit. It drafts IBKR order instructions; nothing trades until you submit them in IBKR. The strategy is untested: use a paper account.
+[`skills/tradetrack-follow`](skills/tradetrack-follow/SKILL.md) is an example agent workflow that follows the top 5% traders through [IBKR's official MCP connector](https://www.interactivebrokers.com/en/trading/ai-integrations.php): entries when they buy a stock two days in a row, exits when they start selling it or a stop is hit. It drafts IBKR order instructions; nothing trades until you submit them in IBKR. The strategy is untested: use a paper account.
 
 ```bash
 claude mcp add --transport http ibkr https://api.ibkr.com/v1/api/mcp-public
