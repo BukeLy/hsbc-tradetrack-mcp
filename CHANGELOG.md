@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.2](https://github.com/BukeLy/hsbc-tradetrack-mcp/compare/v0.1.1...v0.1.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **data:** ignore calendar fields when deduping snapshots ([#11](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/11)) ([10e686d](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/10e686d422502d6a129a1eeee644de948bac6ad5))
+* **tools:** return history snapshots in refresh order ([#14](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/14)) ([6b85537](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/6b855378078f40b027ff027b314f510399348c5b))
+
+
+### Documentation
+
+* let tradetrack-follow run unattended on a schedule ([#13](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/13)) ([66a0368](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/66a03685ce08c170d5dac307b632d67b8186598c))
+* source every tradetrack-follow default ([#15](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/15)) ([c51bfdd](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/c51bfddcd1027e763e1c704f21cf9e818365a2fb))
+
 ## [0.1.1](https://github.com/BukeLy/hsbc-tradetrack-mcp/compare/v0.1.0...v0.1.1) (2026-10-16)
 
 
