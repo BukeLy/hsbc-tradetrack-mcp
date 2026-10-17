@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/BukeLy/hsbc-tradetrack-mcp/compare/v0.1.2...v0.1.3) (2026-10-17)
+
+
+### Documentation
+
+* exit tradetrack-follow positions by holding period ([#18](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/18)) ([7b2af93](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/7b2af936cb4af9e43b851de3bce9b620f794b557))
+* let tradetrack-follow run before the open ([#16](https://github.com/BukeLy/hsbc-tradetrack-mcp/issues/16)) ([d8c7963](https://github.com/BukeLy/hsbc-tradetrack-mcp/commit/d8c7963860fc0d23298119c4d29030148c68145e))
+
 ## [0.1.2](https://github.com/BukeLy/hsbc-tradetrack-mcp/compare/v0.1.1...v0.1.2) (2026-10-17)
 
 
