@@ -53,7 +53,7 @@ Example prompt: *"Which US stocks are HSBC's top 5% traders buying today that th
 
 ## Use with Interactive Brokers
 
-[`skills/tradetrack-follow`](skills/tradetrack-follow/SKILL.md) is an example agent workflow that follows the top 5% traders through [IBKR's official MCP connector](https://www.interactivebrokers.com/en/trading/ai-integrations.php): entries when they buy a stock two days in a row, exits when they start selling it or a stop is hit. It drafts IBKR order instructions; nothing trades until you submit them in IBKR. The strategy is untested: use a paper account.
+[`skills/tradetrack-follow`](skills/tradetrack-follow/SKILL.md) is an example agent workflow that follows the top 5% traders through [IBKR's official MCP connector](https://www.interactivebrokers.com/en/trading/ai-integrations.php): entries when they buy a stock two days in a row, exits on a stop or after a holding period (each run re-decides leveraged ETFs). It drafts IBKR order instructions; nothing trades until you submit them in IBKR. The strategy is untested: use a paper account.
 
 ```bash
 claude mcp add --transport http ibkr https://api.ibkr.com/v1/api/mcp-public
@@ -63,7 +63,7 @@ curl -fsSL --create-dirs -o ~/.claude/skills/tradetrack-follow/SKILL.md \
 
 Then run `/tradetrack-follow` in Claude Code, optionally with overrides such as "US only, stop loss 5%".
 
-To run it as a scheduled task, schedule it on weekdays, naming the time zone, either before the open to review against pre-market quotes (08:30 America/New_York for US) or after the last refresh (16:30), with a prompt such as "unattended, live account, US only": it then drafts instructions without asking, skips a market that is closed, and skips stocks that already have a draft or working order. In ChatGPT, add this server (see [Self-host](#self-host-for-remote-and-cloud-agents)) and the Interactive Brokers plugin, then give `SKILL.md` to Plugin Creator to bundle the three.
+To run it as a scheduled task, schedule it on weekdays, naming the time zone, before the open to review against pre-market quotes (08:30 America/New_York for US), optionally adding an "exits only" run after the first intraday refresh (12:00), with a prompt such as "unattended, live account, US only": it then drafts instructions without asking, skips a market that is closed, and skips stocks that already have a draft or working order. In ChatGPT, add this server (see [Self-host](#self-host-for-remote-and-cloud-agents)) and the Interactive Brokers plugin, then give `SKILL.md` to Plugin Creator to bundle the three.
 
 ## Lists
 
